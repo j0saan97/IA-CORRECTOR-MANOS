@@ -1,10 +1,4 @@
 <?php
-// Copiar como config_api.php DIRECTAMENTE en el servidor. Nunca subirlo al repo.
-const API_TOKEN = 'CAMBIAR';
-
-$pdo = new PDO(
-    'mysql:host=localhost;dbname=nofxdyfx_texas_holdem_cash_table;charset=utf8mb4',
-    'USUARIO',
-    'PASSWORD',
-    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-);
+// Copiar como config_api.php DIRECTAMENTE en el servidor (cPanel), junto a db_connect.php.
+// NUNCA subirlo al repo. Debe tener el mismo valor que API_TOKEN en el .env local.
+const API_TOKEN = 'CAMBIAR_POR_UN_TOKEN_LARGO_Y_ALEATORIO';

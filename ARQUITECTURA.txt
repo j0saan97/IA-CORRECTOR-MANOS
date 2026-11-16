@@ -119,19 +119,33 @@ poker_coach_local/
   Origen                                  Columna MySQL
   --------------------------------------  -----------------------------
   nº de mano (OCR / nombre archivo)       hand_id         (NUEVA, UNIQUE)
-  carpeta del archivo (= tag)             mano_categorias (por nombre)
-  historial -> parse_modalidad            modalidad
-  historial -> parse_stake (NL25)         nivel_stake
-  historial -> parse_position             posicion
-  .env DEFAULT_TIPO_RIVAL                 tipo_rival
-  .env DEFAULT_VARIEDAD_ID / SUBTIPO_ID   variedad_id / subtipo_id
+  carpeta del archivo (= spot)            mano_categorias (por id, ver tabla abajo)
+  fijo 'NoLimitHoldem' (ENUM)             modalidad
+  fijo 'CASH_GAME'                        variedad_id  (se busca por nombre)
+  historial: Zoom/Fast -> 'ZOOM',         subtipo_id   (se busca por nombre)
+    si no '6Max - SIN ANTE' / '9max - SIN ANTE' (CON ANTE si hay ante)
+  historial -> parse_stake (NL20, NL25)   nivel_stake
+  historial -> parse_position             posicion  (SB BB UTG MP HJ CO BTN, igual que la web)
+  .env DEFAULT_TIPO_RIVAL                 tipo_rival ('Desconocido (Default)', 'Fish'...)
   .env HERO_ALIAS                         jugador_alias
   nota de mano PT4                        duda
   historial completo                      narracionMano
   respuesta de Ollama                     analisis_ia     (NUEVA)
-  imagen                                  ruta_imagen
+  imagen                                  ruta_imagen  (SOLO el nombre del archivo;
+                                                        la web le antepone uploads/)
   (manual en el buscador)                 correccion
-  (automático)                            fecha_registro, estado_revision
+  'pendiente'                             estado_revision
+  (automático)                            fecha_registro
+
+  Spot (carpeta)   ->  categoría web (id)
+  ErrorGrave           1  ERRORES GRAVES
+  ManosTopValue        2  MANOS TOP VALUE
+  3BetPots             5  Pozos 3beteados
+  vsRECRE              6  vs RECRE
+  DudaSize             8  DudaSize
+  OOP                 10  OOP        (NUEVA)
+  BlindWar            11  BlindWar   (NUEVA)
+  Review              12  Review     (NUEVA)
 
 
 ================================================================================
@@ -139,7 +153,9 @@ poker_coach_local/
 ================================================================================
   - api_upload.php solo acepta peticiones con X-Api-Token correcto (hash_equals).
   - El token vive en .env (local) y config_api.php (servidor). Ninguno va a GitHub.
-  - Validación de imagen (extensión + getimagesize), consultas preparadas (PDO).
+  - Validación de imagen (extensión + getimagesize + máx. 15 MB), consultas
+    preparadas (mysqli, igual que el resto de la web: getDB() de db_connect.php).
+  - Variedad, subtipo y categorías deben existir; api_upload.php NO los crea.
   - Transacción: si falla el INSERT se borra la imagen subida.
 
 
@@ -154,11 +170,13 @@ poker_coach_local/
         Winamax: "#23193082-973-..." se guarda en PT4 como hand_no 23193082000973.
         Posición validada contra la de PT4 en las 56.115 manos del hero: 0 errores.
         PT4 guarda date_played en UTC; se convierte a hora local.
-  [ ] Formato de ruta_imagen que guarda upload.php (ej. 'uploads/x.png')
-      y ajustar $rutaImagen en api_upload.php si es distinto.
-  [ ] ids de variedad/subtipo por defecto:
-        SELECT * FROM variedades;  SELECT * FROM subtipos;
-  [ ] Formato de 'posicion' que usa la web (BTN / btn / all...).
+  [✔] ruta_imagen: upload.php guarda solo el nombre del archivo (la web pone uploads/).
+  [✔] Variedad 'CASH_GAME', subtipos por nombre ('6Max - SIN ANTE', 'ZOOM'...).
+      (Sacado de datos_maestros.sql y drag-and_dropV4.html del repo poker_library.)
+  [✔] Formato de 'posicion': SB, BB, UTG, MP, HJ, CO, BTN (coincide con hh_parser).
+  [✔] La web usa mysqli, no PDO. api_upload.php reutiliza db_connect.php.
+  [✔] Decidido 16/11/2026: nuevas categorías 10 OOP, 11 BlindWar, 12 Review y
+      nivel NL20 añadido a los desplegables de la web.
   [ ] Gráfica: qwen2.5:7b necesita ~6 GB de VRAM (con CPU funciona, pero lento).
 
 
@@ -172,13 +190,9 @@ FASE 0 - Preparación (30 min)
          [✔] Tesseract OCR 5.5.3
          [✔] Ollama
   [✔] 2. ollama pull qwen2.5:7b
-  [ ] 3. Copiar .env.example -> .env y rellenar.
-         [✔] .env creado (ignorado por git)
-         [✔] Rellenar contraseña PT4, PT4_HAND_ENUM_TYPE, API_TOKEN, HERO_ALIAS y valores por defecto
+  [✔] 3. Copiar .env.example -> .env y rellenar.
   [✔] 4. pip install -r requirements.txt
-  [ ] 5. Verificar los puntos de la sección 6.
-         [✔] Los de PT4 (historial, enum_type, tags)
-         [ ] Los de MySQL/web (ruta_imagen, variedades/subtipos, formato posición)
+  [✔] 5. Verificar los puntos de la sección 6.
   (Comprobado 16/11/2026. Leyenda: [✔] hecho, [ ] pendiente.)
 
 FASE 1 - Lectura local sin subir (validar datos)
@@ -199,11 +213,15 @@ FASE 1 - Lectura local sin subir (validar datos)
   pt4_connector.py, state.py, pipeline.py, main.py y tests (12 en verde).
 
 FASE 2 - Servidor
-  1. Ejecutar server/migration.sql en phpMyAdmin.
-  2. Copiar api_upload.php al repo poker_library (misma carpeta que upload.php),
-     push a dev -> probar -> main.
-  3. Crear config_api.php DIRECTAMENTE en el servidor (cPanel), nunca en el repo.
-  4. Generar token y ponerlo igual en config_api.php y .env.
+  [ ] 1. Ejecutar server/migration.sql en phpMyAdmin (TÚ).
+  [✔] 2. Copiar api_upload.php al repo poker_library (misma carpeta que upload.php).
+         Rama dev de poker_library: api_upload.php + NL20 + categorías 10-12 en
+         BUSCADORV2.html y drag-and_dropV4.html + config_api.php excluido de git y FTP.
+         [ ] push a dev -> probar en dev.poker-library.com -> main.
+  [ ] 3. Subir server/config_api.php DIRECTAMENTE al servidor (cPanel), en la
+         carpeta poker-library-dev/ (y luego poker-library/), junto a db_connect.php (TÚ).
+  [✔] 4. Token generado y puesto igual en server/config_api.php (local, ignorado
+         por git) y en .env. API_UPLOAD_URL apunta de momento a dev.poker-library.com.
 
 FASE 3 - Subida real de una mano
   1. python main.py --file RUTA     (sin --dry-run)
