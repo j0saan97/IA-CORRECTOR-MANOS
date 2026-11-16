@@ -1,0 +1,200 @@
+================================================================================
+ POKER COACH IA LOCAL  ->  poker-library.com
+ Documento de arquitectura (v1 - 15/11/2026)
+================================================================================
+
+OBJETIVO
+--------
+Guardar una captura de PT4 en la carpeta del spot y que, sin hacer nada más,
+la mano aparezca en buscar.poker-library.com con:
+  - la imagen
+  - el historial completo (narracionMano)
+  - tu duda (nota de mano de PT4)
+  - la categoría (= carpeta / tag)
+  - un pre-análisis de IA local basado en TUS apuntes del spot
+
+
+================================================================================
+1. STACK Y TECNOLOGÍAS
+================================================================================
+
+LOCAL (tu PC con Windows)
+  Lenguaje ............ Python 3.11+
+  Vigilancia carpetas . watchdog (PollingObserver, fiable en Google Drive G:)
+  OCR ................. Tesseract OCR + pytesseract + Pillow
+  Base de datos PT4 ... PostgreSQL (la de PokerTracker 4) vía psycopg2
+  IA .................. Ollama + modelo de TEXTO qwen2.5:7b (sin visión: el
+                        historial de PT4 ya es exacto, la visión solo añade errores)
+  Estado local ........ SQLite (state.db) -> capturas ya procesadas
+  Config .............. .env + python-dotenv
+  Subida .............. requests (POST multipart con token)
+
+SERVIDOR (BanaHosting, sin Node)
+  Backend ............. PHP 8 + PDO
+  Base de datos ....... MySQL (nofxdyfx_texas_holdem_cash_table)
+  Endpoint nuevo ...... api_upload.php (protegido con token X-Api-Token)
+  Frontend existente .. drag-and_dropV4.html (subida manual), BUSCADORV2.html
+  Deploy .............. GitHub Actions por FTP (main -> web real, dev -> pruebas)
+
+HERRAMIENTAS
+  VSCode, DBeaver (PT4/PostgreSQL), phpMyAdmin (MySQL BanaHosting), GitHub
+
+
+================================================================================
+2. ESTRUCTURA DEL PROYECTO
+================================================================================
+
+poker_coach_local/
+│
+├── .env.example              Plantilla de configuración (copiar como .env)
+├── .gitignore                Excluye .env, state.db, logs, config_api.php
+├── requirements.txt          Dependencias Python
+├── README.md                 Instalación y uso rápido
+├── ARQUITECTURA.txt          Este documento
+├── main.py                   Entrada: watcher / --check / --file / --dry-run
+│
+├── config/
+│   └── settings.py           Lee .env, rutas, lista de SPOTS
+│
+├── core/
+│   ├── watcher.py            Vigila Hand_Review/<SPOT>/, espera a que el archivo
+│   │                         termine de sincronizar, procesa pendientes al arrancar
+│   ├── ocr.py                Saca el nº de mano: 1º del nombre del archivo,
+│   │                         2º por OCR del título "PokerStars Hand #XXXX"
+│   ├── pt4_connector.py      Busca la mano en PT4 por hand_no: historial, nota, tags
+│   ├── note_parser.py        Convierte la nota XML (richtext) de PT4 a texto
+│   ├── hh_parser.py          Del historial: modalidad, stake (NL25), posición hero
+│   ├── ai_analyzer.py        Prompt + apuntes del spot -> Ollama -> JSON -> Markdown
+│   ├── library_uploader.py   POST a api_upload.php (409 = ya subida)
+│   ├── state.py              SQLite con lo ya procesado (no repite)
+│   └── pipeline.py           Orquesta los pasos para UNA captura
+│
+├── knowledge_base/           Tus apuntes, 1 archivo por spot (mismo nombre)
+│   ├── global_rules.md
+│   ├── 3BetPots.md  BlindWar.md  DudaSize.md  ErrorGrave.md
+│   └── ManosTopValue.md  OOP.md  Review.md  vsRECRE.md
+│
+├── server/                   Archivos para el repo poker_library (servidor)
+│   ├── api_upload.php        Endpoint de subida automática
+│   ├── config_api.example.php  Token + conexión PDO (copiar como config_api.php)
+│   └── migration.sql         Columnas hand_id y analisis_ia
+│
+├── tests/
+│   └── test_parsers.py       Tests de OCR-regex, notas XML e historial
+│
+└── logs/
+    └── pipeline.log          Registro de cada mano procesada / errores
+
+
+================================================================================
+3. FLUJO (PIPELINE)
+================================================================================
+
+ [1] Juegas, etiquetas la mano en PT4 y escribes la DUDA en la nota de mano.
+ [2] Abres la mano en el replayer de PT4 y haces captura que INCLUYA el título
+     de la ventana ("Playback for PokerStars Hand #262289151822").
+     Truco infalible: nombrar el archivo con el nº de mano (262289151822.png).
+ [3] Guardas la captura en  G:/Mi unidad/Hand_Review/<SPOT>/
+ [4] watcher.py detecta el archivo y espera a que termine de escribirse.
+ [5] ocr.py obtiene el nº de mano (nombre del archivo > OCR).
+ [6] pt4_connector.py consulta PostgreSQL:
+        cash_hand_summary.hand_no  -> id_hand, fecha
+        cash_hand_histories        -> historial en texto
+        notes (id_x=id_hand)       -> tu duda (XML -> texto)
+        tags + lookup_tags         -> tags de PT4
+ [7] hh_parser.py calcula modalidad, stake y posición.
+ [8] ai_analyzer.py envía a Ollama: global_rules.md + <SPOT>.md + historial + duda.
+     Devuelve: resumen, decisión clave, veredicto, explicación, alternativa,
+     regla de apuntes aplicada. Sin EV ni números inventados.
+ [9] library_uploader.py hace POST a api_upload.php con la imagen y los campos.
+[10] api_upload.php valida el token, rechaza duplicados (hand_id), guarda la
+     imagen en uploads/, inserta en manos_review y enlaza la categoría por nombre.
+[11] La mano aparece en BUSCADORV2.html. Tú escribes la CORRECCIÓN a mano.
+
+
+================================================================================
+4. MAPEO DE DATOS  (PT4 / local  ->  MySQL manos_review)
+================================================================================
+
+  Origen                                  Columna MySQL
+  --------------------------------------  -----------------------------
+  nº de mano (OCR / nombre archivo)       hand_id         (NUEVA, UNIQUE)
+  carpeta del archivo (= tag)             mano_categorias (por nombre)
+  historial -> parse_modalidad            modalidad
+  historial -> parse_stake (NL25)         nivel_stake
+  historial -> parse_position             posicion
+  .env DEFAULT_TIPO_RIVAL                 tipo_rival
+  .env DEFAULT_VARIEDAD_ID / SUBTIPO_ID   variedad_id / subtipo_id
+  .env HERO_ALIAS                         jugador_alias
+  nota de mano PT4                        duda
+  historial completo                      narracionMano
+  respuesta de Ollama                     analisis_ia     (NUEVA)
+  imagen                                  ruta_imagen
+  (manual en el buscador)                 correccion
+  (automático)                            fecha_registro, estado_revision
+
+
+================================================================================
+5. SEGURIDAD
+================================================================================
+  - api_upload.php solo acepta peticiones con X-Api-Token correcto (hash_equals).
+  - El token vive en .env (local) y config_api.php (servidor). Ninguno va a GitHub.
+  - Validación de imagen (extensión + getimagesize), consultas preparadas (PDO).
+  - Transacción: si falla el INSERT se borra la imagen subida.
+
+
+================================================================================
+6. PUNTOS A VERIFICAR EN TU EQUIPO (no se pudieron comprobar desde aquí)
+================================================================================
+  [ ] Tabla del historial en PT4. Comprobar en DBeaver:
+        SELECT history FROM cash_hand_histories LIMIT 1;
+      Si no existe, buscar:
+        SELECT table_name FROM information_schema.tables
+        WHERE table_name ILIKE '%histor%';
+  [ ] Valor de enum_type para notas de mano:
+        SELECT DISTINCT enum_type FROM tags;   -> poner en PT4_HAND_ENUM_TYPE
+  [ ] Formato de ruta_imagen que guarda upload.php (ej. 'uploads/x.png')
+      y ajustar $rutaImagen en api_upload.php si es distinto.
+  [ ] ids de variedad/subtipo por defecto:
+        SELECT * FROM variedades;  SELECT * FROM subtipos;
+  [ ] Formato de 'posicion' que usa la web (BTN / btn / all...).
+  [ ] Gráfica: qwen2.5:7b necesita ~6 GB de VRAM (con CPU funciona, pero lento).
+
+
+================================================================================
+7. FASES DE IMPLANTACIÓN
+================================================================================
+
+FASE 0 - Preparación (30 min)
+  1. Instalar Python 3.11+, Tesseract OCR (instalador UB-Mannheim) y Ollama.
+  2. ollama pull qwen2.5:7b
+  3. Copiar .env.example -> .env y rellenar.
+  4. pip install -r requirements.txt
+  5. Verificar los puntos de la sección 6.
+
+FASE 1 - Lectura local sin subir (validar datos)
+  1. python main.py --check            -> todo en [OK]
+  2. Guardar una captura en Hand_Review/OOP/
+  3. python main.py --file "G:/Mi unidad/Hand_Review/OOP/xxx.png" --dry-run
+  4. Revisar en consola: hand_id, stake, posición, duda, historial correctos.
+
+FASE 2 - Servidor
+  1. Ejecutar server/migration.sql en phpMyAdmin.
+  2. Copiar api_upload.php al repo poker_library (misma carpeta que upload.php),
+     push a dev -> probar -> main.
+  3. Crear config_api.php DIRECTAMENTE en el servidor (cPanel), nunca en el repo.
+  4. Generar token y ponerlo igual en config_api.php y .env.
+
+FASE 3 - Subida real de una mano
+  1. python main.py --file RUTA     (sin --dry-run)
+  2. Comprobar en BUSCADORV2.html.
+  3. Repetir la misma -> debe decir "ya estaba en la biblioteca" (409).
+
+FASE 4 - Apuntes + IA
+  1. Exportar apuntes de Drive a knowledge_base/<SPOT>.md
+  2. Probar varias manos con --dry-run y ajustar el prompt en ai_analyzer.py.
+  3. Mostrar analisis_ia en el modal del buscador (como se hizo con la duda).
+
+FASE 5 - Automático
+  1. python main.py   (modo vigilancia)
+  2. Opcional: arrancarlo con Windows (Programador de tareas).

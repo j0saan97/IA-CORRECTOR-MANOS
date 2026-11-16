@@ -1,0 +1,8 @@
+.env
+state.db
+logs/
+config_api.php
+__pycache__/
+*.pyc
+.venv/
+venv/
