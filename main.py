@@ -72,11 +72,17 @@ def run_checks() -> bool:
     except Exception:
         line("XX", "Ollama", f"no responde en {settings.OLLAMA_URL} (¿está abierto?)"); ok = False
 
-    # API (Fase 2)
-    if settings.API_TOKEN:
-        line("--", "API", "token configurado (la prueba de subida llega en la Fase 3)")
+    # API
+    if not settings.API_TOKEN or not settings.API_UPLOAD_URL:
+        line("XX", "API", "falta API_UPLOAD_URL o API_TOKEN en .env"); ok = False
     else:
-        line("--", "API", "sin token todavía (Fase 2)")
+        try:
+            from core import library_uploader
+            line("OK", "API", library_uploader.check())
+        except Exception as e:
+            line("XX", "API", str(e)); ok = False
+    if not settings.HERO_ALIAS:
+        line("!!", "Alias", "HERO_ALIAS vacío en .env: la mano se subirá sin jugador")
 
     print("\nTodo listo." if ok else "\nHay puntos en [XX] que corregir.")
     return ok

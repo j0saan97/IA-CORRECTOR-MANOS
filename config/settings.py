@@ -43,8 +43,20 @@ OLLAMA_MODEL = _env("OLLAMA_MODEL", "qwen2.5:7b")
 API_UPLOAD_URL = _env("API_UPLOAD_URL")
 API_TOKEN = _env("API_TOKEN")
 
-# --- Valores por defecto de la mano ---
-HERO_ALIAS = _env("HERO_ALIAS")
-DEFAULT_TIPO_RIVAL = _env("DEFAULT_TIPO_RIVAL")
-DEFAULT_VARIEDAD_ID = _env("DEFAULT_VARIEDAD_ID")
-DEFAULT_SUBTIPO_ID = _env("DEFAULT_SUBTIPO_ID")
+# --- Valores de la mano en la web ---
+HERO_ALIAS = _env("HERO_ALIAS")                      # nick en la web (users_hand_review)
+DEFAULT_TIPO_RIVAL = _env("DEFAULT_TIPO_RIVAL", "Desconocido (Default)")
+MODALIDAD = "NoLimitHoldem"
+VARIEDAD = "CASH_GAME"
+
+# Spot (carpeta) -> id de la tabla categorias de la web
+SPOT_CATEGORIAS = {
+    "ErrorGrave": 1,
+    "ManosTopValue": 2,
+    "3BetPots": 5,
+    "vsRECRE": 6,
+    "DudaSize": 8,
+    "BlindWar": 10,
+    "OOP": 11,
+    "Review": 12,
+}

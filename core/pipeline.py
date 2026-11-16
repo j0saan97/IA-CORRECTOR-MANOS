@@ -54,6 +54,7 @@ def print_result(r: Result) -> None:
  Hero             : {i.hero}
  Posición         : {i.posicion}   ({i.jugadores} jugadores)
  Duda (nota PT4)  : {h.nota or '(sin nota)'}
+ -> Web           : {settings.VARIEDAD} / {i.subtipo} / {i.nivel_stake} / categoría {settings.SPOT_CATEGORIAS.get(r.spot)} / alias {settings.HERO_ALIAS or '-'}
 ------------------------------ historial ------------------------------
 {h.history.strip()}
 =======================================================================""")
@@ -75,5 +76,20 @@ def process(path: Path, dry_run: bool = False) -> Result | None:
         print_result(r)
         return r
 
-    # Pasos 8-10 (IA + subida): Fases 3 y 4
-    raise NotImplementedError("La subida real llega en la Fase 3. Usa --dry-run por ahora.")
+    # Paso 8 (IA) llega en la Fase 4. Paso 9-10: subida.
+    from core import library_uploader
+    try:
+        up = library_uploader.upload(r)
+    except Exception as e:
+        log.error("%s -> subida fallida: %s", path, e)
+        state.mark(path, r.hand_no, "error", str(e))
+        raise
+
+    if up.status == "success":
+        msg = f"Mano {r.hand_no} subida a la biblioteca (id {up.id}, {r.spot})."
+    else:
+        msg = f"Mano {r.hand_no}: ya estaba en la biblioteca (id {up.id})."
+    print(msg)
+    log.info("%s -> %s", path.name, msg)
+    state.mark(path, r.hand_no, "ok", msg)
+    return r

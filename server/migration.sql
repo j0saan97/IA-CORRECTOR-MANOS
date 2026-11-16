@@ -13,8 +13,8 @@ ALTER TABLE manos_review
 
 -- 2. Categorías nuevas para los spots que no tenían
 INSERT IGNORE INTO categorias (id, nombre) VALUES
-    (10, 'OOP'),
-    (11, 'BlindWar'),
+    (10, 'BlindWar'),
+    (11, 'OOP'),
     (12, 'Review');
 
 -- Comprobación

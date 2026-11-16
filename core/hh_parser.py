@@ -16,6 +16,10 @@ _WAITING = re.compile(r"^(.+?):? (?:waits for big blind|is sitting out|sits out)
 _BY_DIST ={1: "CO", 2: "HJ", 3: "MP", 4: "UTG+2", 5: "UTG+1"}
 
 
+_MAX = re.compile(r"(\d+)-max", re.IGNORECASE)
+_ANTE = re.compile(r"posts (?:the )?ante", re.IGNORECASE)
+
+
 @dataclass
 class HandInfo:
     sala: str
@@ -24,6 +28,24 @@ class HandInfo:
     hero: str | None
     posicion: str | None
     jugadores: int
+    max_jugadores: int = 6
+    ante: bool = False
+
+    @property
+    def subtipo(self) -> str:
+        """Subtipo tal y como existe en la tabla subtipos de la web (CASH_GAME)."""
+        if self.modalidad == "Zoom":
+            return "ZOOM"
+        mesa = "9max" if self.max_jugadores >= 7 else "6Max"
+        return f"{mesa} - {'CON' if self.ante else 'SIN'} ANTE"
+
+
+def parse_max_jugadores(history: str) -> int:
+    head = "\n".join(history.splitlines()[:2])
+    m = _MAX.search(head)
+    if m:
+        return int(m.group(1))
+    return 9 if "9-max" in head or "full ring" in head.lower() else 6
 
 
 def parse_sala(first_line: str) -> str:
@@ -151,4 +173,6 @@ def parse(history: str) -> HandInfo:
         hero=hero,
         posicion=parse_position(history, hero),
         jugadores=len(_seats(history.splitlines())),
+        max_jugadores=parse_max_jugadores(history),
+        ante=bool(_ANTE.search(history)),
     )

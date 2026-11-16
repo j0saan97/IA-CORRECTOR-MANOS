@@ -74,10 +74,9 @@ poker_coach_local/
 │   ├── 3BetPots.md  BlindWar.md  DudaSize.md  ErrorGrave.md
 │   └── ManosTopValue.md  OOP.md  Review.md  vsRECRE.md
 │
-├── server/                   Archivos para el repo poker_library (servidor)
-│   ├── api_upload.php        Endpoint de subida automática
-│   ├── config_api.example.php  Token + conexión PDO (copiar como config_api.php)
-│   └── migration.sql         Columnas hand_id y analisis_ia
+├── server/
+│   └── config_api.example.php  Plantilla del token (config_api.php va solo al servidor)
+│   (api_upload.php vive en el repo poker_library, junto a upload.php)
 │
 ├── tests/
 │   └── test_parsers.py       Tests de OCR-regex, notas XML e historial
@@ -138,14 +137,15 @@ poker_coach_local/
   (automático)                            fecha_registro
 
   Spot (carpeta)   ->  categoría web (id)
-  ErrorGrave           1  ERRORES GRAVES
-  ManosTopValue        2  MANOS TOP VALUE
-  3BetPots             5  Pozos 3beteados
-  vsRECRE              6  vs RECRE
-  DudaSize             8  DudaSize
-  OOP                 10  OOP        (NUEVA)
-  BlindWar            11  BlindWar   (NUEVA)
-  Review              12  Review     (NUEVA)
+  (En la BD las categorías ya se llaman como los spots. Confirmado 16/11/2026.)
+  ErrorGrave           1
+  ManosTopValue        2
+  3BetPots             5
+  vsRECRE              6
+  DudaSize             8
+  BlindWar            10   (NUEVA)
+  OOP                 11   (NUEVA)
+  Review              12   (NUEVA)
 
 
 ================================================================================
@@ -213,7 +213,14 @@ FASE 1 - Lectura local sin subir (validar datos)
   pt4_connector.py, state.py, pipeline.py, main.py y tests (12 en verde).
 
 FASE 2 - Servidor
-  [ ] 1. Ejecutar server/migration.sql en phpMyAdmin (TÚ).
+  [✔] 1. Migración en phpMyAdmin (categorías 10 BlindWar, 11 OOP, 12 Review creadas).
+         SQL usado (archivo eliminado del repo, se deja aquí como referencia):
+           ALTER TABLE manos_review
+               ADD COLUMN hand_id VARCHAR(32) NULL,
+               ADD COLUMN analisis_ia TEXT NULL,
+               ADD UNIQUE KEY uq_manos_review_hand_id (hand_id);
+           INSERT IGNORE INTO categorias (id, nombre) VALUES
+               (10, 'BlindWar'), (11, 'OOP'), (12, 'Review');
   [✔] 2. Copiar api_upload.php al repo poker_library (misma carpeta que upload.php).
          Rama dev de poker_library: api_upload.php + NL20 + categorías 10-12 en
          BUSCADORV2.html y drag-and_dropV4.html + config_api.php excluido de git y FTP.
@@ -224,6 +231,8 @@ FASE 2 - Servidor
          por git) y en .env. API_UPLOAD_URL apunta de momento a dev.poker-library.com.
 
 FASE 3 - Subida real de una mano
+  Código hecho: core/library_uploader.py (POST + check del token en --check),
+  subtipo desde el historial (ZOOM / 6Max / 9max, CON/SIN ANTE), categoría por spot.
   1. python main.py --file RUTA     (sin --dry-run)
   2. Comprobar en BUSCADORV2.html.
   3. Repetir la misma -> debe decir "ya estaba en la biblioteca" (409).
