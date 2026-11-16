@@ -29,7 +29,8 @@ def build_fields(r, analisis_ia: str | None = None) -> dict:
         "nivel": r.info.nivel_stake,
         "rival": settings.DEFAULT_TIPO_RIVAL,
         "posicion": r.info.posicion or "all",
-        "narracionMano": r.hand.history.strip(),
+        # narracionMano no se envía: es la descripción que el usuario escribe a mano
+        # en drag-and_dropV4.html ("Describe la mano..."). Desde aquí queda NULL.
         "duda": r.hand.nota,
         "categorias": json.dumps([settings.SPOT_CATEGORIAS[r.spot]]),
         "jugador_alias": settings.HERO_ALIAS,

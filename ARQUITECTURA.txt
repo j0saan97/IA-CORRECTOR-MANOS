@@ -8,7 +8,6 @@ OBJETIVO
 Guardar una captura de PT4 en la carpeta del spot y que, sin hacer nada más,
 la mano aparezca en buscar.poker-library.com con:
   - la imagen
-  - el historial completo (narracionMano)
   - tu duda (nota de mano de PT4)
   - la categoría (= carpeta / tag)
   - un pre-análisis de IA local basado en TUS apuntes del spot
@@ -128,7 +127,9 @@ poker_coach_local/
   .env DEFAULT_TIPO_RIVAL                 tipo_rival ('Desconocido (Default)', 'Fish'...)
   .env HERO_ALIAS                         jugador_alias
   nota de mano PT4                        duda
-  historial completo                      narracionMano
+  (no se envía: es el "Describe la mano"   narracionMano  (queda NULL)
+   que el usuario escribe en drag&drop)
+  historial completo                      (solo local: parseo + prompt de la IA)
   respuesta de Ollama                     analisis_ia     (NUEVA)
   imagen                                  ruta_imagen  (SOLO el nombre del archivo;
                                                         la web le antepone uploads/)
@@ -224,24 +225,51 @@ FASE 2 - Servidor
   [✔] 2. Copiar api_upload.php al repo poker_library (misma carpeta que upload.php).
          Rama dev de poker_library: api_upload.php + NL20 + categorías 10-12 en
          BUSCADORV2.html y drag-and_dropV4.html + config_api.php excluido de git y FTP.
-         [ ] push a dev -> probar en dev.poker-library.com -> main.
-  [ ] 3. Subir server/config_api.php DIRECTAMENTE al servidor (cPanel), en la
-         carpeta poker-library-dev/ (y luego poker-library/), junto a db_connect.php (TÚ).
+         [✔] push a dev y a main (origin/main = origin/dev, commit efe3919).
+  [✔] 3. config_api.php subido por cPanel (16/11/2026). En dev funciona: --check da
+         "token válido". [ ] Confirmar que también está en la carpeta de producción
+         antes de cambiar API_UPLOAD_URL a la web real.
   [✔] 4. Token generado y puesto igual en server/config_api.php (local, ignorado
          por git) y en .env. API_UPLOAD_URL apunta de momento a dev.poker-library.com.
+  FASE 2 COMPLETADA (en dev).
 
 FASE 3 - Subida real de una mano
   Código hecho: core/library_uploader.py (POST + check del token en --check),
   subtipo desde el historial (ZOOM / 6Max / 9max, CON/SIN ANTE), categoría por spot.
-  1. python main.py --file RUTA     (sin --dry-run)
-  2. Comprobar en BUSCADORV2.html.
-  3. Repetir la misma -> debe decir "ya estaba en la biblioteca" (409).
+  [✔] 1. python main.py --file RUTA     (sin --dry-run)
+         Mano Winamax 23194209000298 (55 en SB, NL20, ErrorGrave) -> id 42 en dev.
+  [✔] 2. Comprobar en BUSCADORV2.html: campos, imagen, duda y categoría correctos.
+  [✔] 3. Repetir la misma -> "ya estaba en la biblioteca (id 42)" (409).
+  [✔] 4. Corrección (16/11/2026): narracionMano YA NO se envía. Es el texto
+         "Describe la mano..." que el usuario escribe en drag-and_dropV4.html; desde
+         el script queda NULL y el buscador no muestra la línea. El historial de PT4
+         solo se usa en local (parseo + IA).
+  [ ] 5. Limpiar la mano de prueba en phpMyAdmin (dev), subida antes del cambio:
+           UPDATE manos_review SET narracionMano = NULL WHERE id = 42;
+  FASE 3 COMPLETADA.
+  Avisos vistos al probar capturas (no son fallos del código):
+    - PokerTracker4_1ueqqVFO2g.png: sin nº de mano legible -> renombrar con el nº.
+    - buenraise-allin.flop.png: mano 262215195727 no está en la BD de PT4 actual.
+    - mejor-fold.png: falta el tag ManosTopValue en PT4 (solo tiene Review).
+  Pendiente aparte: el login de revisor en el buscador no deja comentar. Código y
+  endpoints (auth.php / comentario.php) correctos y sin cambios; revisar que el
+  usuario exista en users_hand_review con user_type 'top_reg' en la BD de dev.
 
-FASE 4 - Apuntes + IA
-  1. Exportar apuntes de Drive a knowledge_base/<SPOT>.md
-  2. Probar varias manos con --dry-run y ajustar el prompt en ai_analyzer.py.
-  3. Mostrar analisis_ia en el modal del buscador (como se hizo con la duda).
+FASE 4 - Apuntes + IA                                         [ ] PENDIENTE
+  [ ] 1. Exportar apuntes de Drive a knowledge_base/<SPOT>.md
+         (ahora los 9 .md solo tienen el título, ~10 bytes cada uno).
+  [ ] 2. Escribir core/ai_analyzer.py (ahora vacío) y enganchar en pipeline.py
+         (paso 8) -> campo analisis_ia del POST.
+  [ ] 3. Probar varias manos con --dry-run y ajustar el prompt.
+  [ ] 4. Mostrar analisis_ia en el modal del buscador (get_hands.php y
+         BUSCADORV2.html aún no lo leen).
 
-FASE 5 - Automático
-  1. python main.py   (modo vigilancia)
-  2. Opcional: arrancarlo con Windows (Programador de tareas).
+FASE 5 - Automático                                           [ ] PENDIENTE
+  (No depende de la Fase 4: puede hacerse antes; las manos subirían sin IA.)
+  [ ] 1. Escribir core/watcher.py (ahora vacío) y python main.py (modo vigilancia):
+         detectar capturas nuevas, esperar a que terminen de escribirse, procesar
+         pendientes al arrancar, no repetir (state.db) y registrar errores en log.
+  [ ] 2. Opcional: arrancarlo con Windows (Programador de tareas).
+  [ ] 3. Pasar a producción: confirmar config_api.php en la carpeta real y cambiar
+         API_UPLOAD_URL en .env a la web real.
+  [ ] 4. Opcional: HAND_REVIEW_DIR -> G:/Mi unidad/Hand_Review (Google Drive).
