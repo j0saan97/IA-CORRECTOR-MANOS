@@ -1,8 +1,10 @@
 .env
-state.db
-logs/
-config_api.php
 __pycache__/
 *.pyc
+logs/*.log
+state.db
 .venv/
-venv/
+server/config_api.php
+logs/*
+!logs/.gitkeep
+Hand_Review/
