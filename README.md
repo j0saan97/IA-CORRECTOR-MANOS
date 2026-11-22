@@ -3,7 +3,8 @@
 Guarda una captura de PT4 en `Hand_Review/<SPOT>/` y la mano aparece en
 buscar.poker-library.com con imagen, historial, duda, categoría y pre-análisis de IA local.
 
-Ver [ARQUITECTURA.txt](ARQUITECTURA.txt) para el diseño completo.
+Documentación completa en [doc/](doc/README.md): arquitectura, requisitos, fases,
+documentación técnica e investigación de problemas.
 
 ## Instalación rápida
 1. Python 3.11+, Tesseract OCR y Ollama (`ollama pull qwen2.5:7b`).
