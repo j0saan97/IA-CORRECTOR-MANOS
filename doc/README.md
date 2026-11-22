@@ -1,5 +1,7 @@
 # Documentación del proyecto
 
+![Mapa mental de la arquitectura](img/mapa-mental.jpg)
+
 | Documento | Contenido |
 |-----------|-----------|
 | [ARQUITECTURA.md](ARQUITECTURA.md) | Objetivo, stack, estructura de carpetas, flujo del pipeline y seguridad |

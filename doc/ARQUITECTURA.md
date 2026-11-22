@@ -2,6 +2,8 @@
 
 v1 — 15/11/2026
 
+![Mapa mental de la arquitectura](img/mapa-mental.jpg)
+
 ## Objetivo
 
 Guardar una captura de PT4 en la carpeta del spot y que, sin hacer nada más,
