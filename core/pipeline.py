@@ -74,9 +74,10 @@ def process(path: Path, dry_run: bool = False) -> Result | None:
              r.info.posicion, r.spot)
     if dry_run:
         print_result(r)
+        run_ai(r, overwrite=True, show=True)     # en dry-run se regenera para ajustar el prompt
         return r
 
-    # Paso 8 (IA) llega en la Fase 4. Paso 9-10: subida.
+    # Pasos 9-10: subida (primero, para que la mano llegue a la web aunque la IA tarde o falle)
     from core import library_uploader
     try:
         up = library_uploader.upload(r)
@@ -92,4 +93,25 @@ def process(path: Path, dry_run: bool = False) -> Result | None:
     print(msg)
     log.info("%s -> %s", path.name, msg)
     state.mark(path, r.hand_no, "ok", msg)
+
+    # Paso 8: pre-análisis IA en local (<SPOT>/<hand_id>.txt). No se sube.
+    run_ai(r)
     return r
+
+
+def run_ai(r: Result, overwrite: bool = False, show: bool = False) -> None:
+    """Un fallo de la IA (Ollama cerrado, timeout...) no cuenta como error de la mano."""
+    from core import ai_analyzer
+    print(f"Analizando mano {r.hand_no} con {settings.OLLAMA_MODEL} (puede tardar unos minutos)...")
+    try:
+        dest = ai_analyzer.analyze(r, overwrite=overwrite)
+    except Exception as e:
+        log.error("%s -> análisis IA fallido: %s", r.path.name, e)
+        print(f"[!] Análisis IA fallido: {e}")
+        return
+    if dest is None:
+        print(f"Análisis IA ya existía: {ai_analyzer.txt_path(r)}")
+        return
+    print(f"Análisis IA guardado en {dest}")
+    if show:
+        print(dest.read_text(encoding="utf-8"))

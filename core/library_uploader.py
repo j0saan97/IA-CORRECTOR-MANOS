@@ -19,7 +19,7 @@ class UploadResult:
     message: str
 
 
-def build_fields(r, analisis_ia: str | None = None) -> dict:
+def build_fields(r) -> dict:
     """Campos que se envían a api_upload.php (r = pipeline.Result)."""
     return {
         "hand_id": r.hand_no,
@@ -34,11 +34,12 @@ def build_fields(r, analisis_ia: str | None = None) -> dict:
         "duda": r.hand.nota,
         "categorias": json.dumps([settings.SPOT_CATEGORIAS[r.spot]]),
         "jugador_alias": settings.HERO_ALIAS,
-        "analisis_ia": analisis_ia or "",
+        # analisis_ia no se envía: se guarda en local (<SPOT>/<hand_id>.txt) y el usuario
+        # lo pega a mano si le sirve. En la BD queda NULL.
     }
 
 
-def upload(r, analisis_ia: str | None = None) -> UploadResult:
+def upload(r) -> UploadResult:
     if not settings.API_UPLOAD_URL or not settings.API_TOKEN:
         raise UploadError("Falta API_UPLOAD_URL o API_TOKEN en el .env")
 
@@ -47,7 +48,7 @@ def upload(r, analisis_ia: str | None = None) -> UploadResult:
         resp = requests.post(
             settings.API_UPLOAD_URL,
             headers={"X-Api-Token": settings.API_TOKEN},
-            data=build_fields(r, analisis_ia),
+            data=build_fields(r),
             files={"foto_mano": (r.path.name, img, mime)},
             timeout=60,
         )

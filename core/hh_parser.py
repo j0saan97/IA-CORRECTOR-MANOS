@@ -150,6 +150,11 @@ def _positions(lines: list[str], history: str) -> dict[str, str]:
     return pos
 
 
+def positions(history: str) -> dict[str, str]:
+    """{jugador: posición} de todos los jugadores de la mano."""
+    return _positions(history.splitlines(), history)
+
+
 def parse_position(history: str, hero: str | None = None) -> str | None:
     hero = hero or parse_hero(history)
     return _positions(history.splitlines(), history).get(hero) if hero else None

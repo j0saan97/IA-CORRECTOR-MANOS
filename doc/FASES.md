@@ -75,8 +75,12 @@ subtipo desde el historial (ZOOM / 6Max / 9max, CON/SIN ANTE), categoría por sp
 
 - [ ] Exportar apuntes de Drive a `knowledge_base/<SPOT>.md`
   (ahora los 9 `.md` solo tienen el título).
-- [ ] Escribir `core/ai_analyzer.py` (ahora vacío) y engancharlo en `pipeline.py`
-  (paso 8) → guarda `Hand_Review/<SPOT>/<hand_id>.txt` (no va en el POST).
+- [x] `core/ai_analyzer.py` enganchado en `pipeline.py` (después de la subida) → guarda
+  `Hand_Review/<SPOT>/<hand_id>.txt` (no va en el POST). Si la IA falla, la mano se sube igual.
+- [x] `core/hh_summary.py`: resumen exacto de la mano en español (posiciones, cartas, acciones
+  por calle en BB, bote, all-in). Va en el `.txt` y es lo que lee la IA.
+- [ ] **Calidad de la IA insuficiente** con `qwen2.5:7b` en CPU (ver
+  [INVESTIGACION.md](INVESTIGACION.md#calidad-del-análisis-con-qwen257b)). Decidir modelo/enfoque.
 - [ ] Probar varias manos con `--dry-run` y ajustar el prompt.
 - ~~Mostrar `analisis_ia` en el modal del buscador~~ → descartado (22/11/2026): el
   análisis lo valida el usuario y lo pega a mano.

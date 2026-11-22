@@ -65,7 +65,24 @@ PokerStars.** Winamax y Yatahay se validarán en versiones posteriores (no se bl
 - **Solución:** la nota y el tag tienen que estar en la MISMA mano que sale en el título
   del replayer, y hay que cerrar la ventana de notas. Comprobar con `--dry-run`.
 
-### Avisos al probar capturas (no son fallos del código)
+### Ollama: error CUDA con la GTX 1050 Ti (22/11/2026)
+- **Síntoma:** `500` de Ollama: `CUDA error: the provided PTX was compiled with an unsupported toolchain`.
+- **Causa:** driver NVIDIA 560.94 demasiado antiguo para Ollama 0.40.17.
+- **Solución temporal:** `OLLAMA_NUM_GPU=0` en `.env` (solo CPU): ~80-95 s por mano.
+- **Solución real:** actualizar el driver NVIDIA y quitar `OLLAMA_NUM_GPU`. Aun así la GPU
+  tiene 4 GB y `qwen2.5:7b` pide ~6 GB: irá repartido GPU/CPU.
+
+### Calidad del análisis con qwen2.5:7b (22/11/2026)
+Prueba con la mano 262442102849 (A♥Q♥ UTG, check-raise all-in en flop A♦Q♦2♦ contra 22):
+1. **Historial en bruto:** se inventó "ases y reyes" y un all-in en el river.
+2. **Con resumen calculado (`hh_summary`):** cartas y acciones bien, pero situó la decisión
+   en el turn y juzgó por el resultado ("Error" porque el rival tenía trío).
+3. **Sin showdown + reglas más estrictas:** volvió a inventar cartas (Q♠A♠) y acciones.
+
+Conclusión: un 7B en CPU no razona bien manos de póker aunque reciba los datos exactos.
+El resumen exacto de la mano (sin IA) sí es fiable y se guarda siempre en el `.txt`.
+Opciones pendientes de decidir: apuntes completos + modelo local mayor (lento en este PC),
+o IA en la nube (mucho mejor razonamiento, coste por mano, la mano sale del PC).
 Estas capturas se movieron a `Hand_Review/_archivo/` el 22/11/2026.
 - `PokerTracker4_1ueqqVFO2g.png`: sin nº de mano legible → renombrar con el nº.
 - `buenraise-allin.flop.png`: la mano 262215195727 no está en la BD de PT4 actual.

@@ -38,6 +38,8 @@ PT4_HAND_ENUM_TYPE = _env("PT4_HAND_ENUM_TYPE", "H")
 # --- Ollama ---
 OLLAMA_URL = _env("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = _env("OLLAMA_MODEL", "qwen2.5:7b")
+# Capas en GPU: vacío = lo decide Ollama; 0 = solo CPU (driver NVIDIA antiguo -> error CUDA PTX)
+OLLAMA_NUM_GPU = int(_env("OLLAMA_NUM_GPU")) if _env("OLLAMA_NUM_GPU") else None
 
 # --- Subida ---
 API_UPLOAD_URL = _env("API_UPLOAD_URL")
