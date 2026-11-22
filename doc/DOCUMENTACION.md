@@ -120,6 +120,21 @@ En la BD las categorías ya se llaman como los spots (confirmado 16/11/2026).
 | OOP | 11 (nueva) |
 | Review | 12 (nueva) |
 
+## Entornos web (repo poker_library)
+
+| Entorno | Rama | Subir manos (drag & drop) | Buscar manos |
+|---------|------|---------------------------|--------------|
+| **DEV** (pruebas) | `dev` | https://dev.poker-library.com/drag-and_dropV4.html | https://dev.poker-library.com/BUSCADORV2.html |
+| **PRODUCCIÓN** | `main` | por confirmar | por confirmar (buscar.poker-library.com) |
+
+- Endpoint del script en DEV: `https://dev.poker-library.com/api_upload.php` (`API_UPLOAD_URL` en `.env`).
+- Ahora mismo el watcher sube a **DEV**: las manos subidas aparecen en el buscador de DEV.
+- Deploy: cada push a `dev` o `main` del repo poker_library se sube por FTP con GitHub Actions
+  (`dev` → carpeta `poker-library-dev/`, `main` → `poker-library/`). Tarda 1-2 min.
+- Repo local: `C:\Users\Administrador\Desktop\poker_library` (lista de URLs también en su `urls-dev.txt`).
+- **No hay entorno localhost:** el PC no tiene PHP ni MySQL y la base de datos solo existe
+  en BanaHosting. Para probar cambios de la web se hace push a `dev` y se mira en DEV.
+
 ## Servidor
 
 - `api_upload.php` vive en el repo **poker_library**, junto a `upload.php`, y reutiliza `db_connect.php`.
