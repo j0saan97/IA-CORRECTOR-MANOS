@@ -4,7 +4,7 @@
 
 | ID | Requisito | Estado |
 |----|-----------|--------|
-| RF-01 | Detectar capturas nuevas en `Hand_Review/<SPOT>/` sin intervención del usuario | Pendiente (Fase 5) |
+| RF-01 | Detectar capturas nuevas en `Hand_Review/<SPOT>/` sin intervención del usuario | Hecho (`python main.py`; arranque con Windows pendiente) |
 | RF-02 | Obtener el nº de mano del nombre del archivo o, si no, por OCR del título del replayer | Hecho |
 | RF-03 | Soportar PokerStars (v1). Winamax y Yatahay ya están en el código, pero se validarán en versiones posteriores | Hecho (PokerStars por validar con mano real) |
 | RF-04 | Leer de PT4 el historial, la nota de mano (duda) y los tags | Hecho |

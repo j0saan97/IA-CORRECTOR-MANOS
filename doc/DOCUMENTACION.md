@@ -6,9 +6,23 @@
 python main.py --check                     # comprueba conexiones (PT4, Tesseract, Ollama, token)
 python main.py --file RUTA.png --dry-run   # procesa una captura sin subir
 python main.py --file RUTA.png             # procesa y sube
-python main.py                             # modo vigilancia (Fase 5)
+python main.py                             # modo vigilancia: sube solo lo que guardes
+python main.py --dry-run                   # vigilancia sin subir (para probar)
 python -m pytest                           # tests
 ```
+
+### Modo vigilancia (watcher)
+
+- **Solo funciona mientras `python main.py` está abierto.** Si lo cierras, las capturas
+  nuevas se quedan pendientes y se suben la próxima vez que arranque.
+- Mira `Hand_Review/<SPOT>/` cada 5 s. Solo imágenes (`.png .jpg .jpeg .bmp .webp`)
+  directamente dentro de una carpeta de spot: ignora `.txt`, subcarpetas y carpetas
+  que no son spots (p. ej. `Hand_Review/_archivo/`, donde se guardan las capturas viejas).
+- Espera a que el archivo deje de cambiar 3 s antes de procesarlo (captura o sync de Drive).
+- Al arrancar procesa todo lo que no esté subido. Las capturas con error se reintentan
+  en cada arranque (es normal ver el mismo error en el log hasta arreglarlas o apartarlas).
+- Una mano ya subida no se repite: `state.db` por archivo y 409 del servidor por `hand_id`.
+- Todo queda en `logs/pipeline.log`.
 
 ### Cómo preparar una captura
 

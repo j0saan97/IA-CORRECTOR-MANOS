@@ -7,7 +7,7 @@
 | 2 — Servidor | Completada (en dev) |
 | 3 — Subida real de una mano | Completada |
 | 4 — Apuntes + IA | **Pendiente** |
-| 5 — Automático | **Pendiente** (no depende de la Fase 4) |
+| 5 — Automático | **En curso**: watcher hecho; falta arranque con Windows y producción |
 
 ## Fase 0 — Preparación
 
@@ -73,9 +73,11 @@ subtipo desde el historial (ZOOM / 6Max / 9max, CON/SIN ANTE), categoría por sp
 
 ## Fase 5 — Automático
 
-- [ ] Escribir `core/watcher.py` (ahora vacío) y `python main.py` (modo vigilancia):
-  detectar capturas nuevas, esperar a que terminen de escribirse, procesar pendientes
-  al arrancar, no repetir (`state.db`) y registrar errores en log.
+- [x] `core/watcher.py` y `python main.py` (modo vigilancia): detecta capturas nuevas
+  (sondeo cada 5 s), espera a que terminen de escribirse, procesa pendientes al arrancar,
+  no repite (`state.db`) y registra errores en log. Tests en `tests/test_watcher.py`.
+  Probado 22/11/2026: captura nueva detectada en 3 s (dry-run) y mano PokerStars
+  262442102849 (AQ, UTG, NL25, ErrorGrave) subida sola → id 43 en dev.
 - [ ] Opcional: arrancarlo con Windows (Programador de tareas).
 - [ ] Pasar a producción: confirmar `config_api.php` en la carpeta real y cambiar
   `API_UPLOAD_URL` en `.env` a la web real.

@@ -57,7 +57,16 @@ PokerStars.** Winamax y Yatahay se validarán en versiones posteriores (no se bl
 - **Causa:** PT4 solo guarda la nota de mano al CERRAR la ventana de notas.
 - **Solución:** cerrar la ventana de notas antes de guardar la captura.
 
+### Nota y tag puestos en otra mano (22/11/2026)
+- **Síntoma:** la captura salía "sin nota" y sin tag aunque se habían puesto en PT4.
+- **Causa:** se pusieron en la mano 262442102849, pero la captura era de la 262416268488.
+  El script busca nota y tag **por nº de mano**. Además, la ventana de notas de la captura
+  se quedó abierta y esa nota nunca se guardó.
+- **Solución:** la nota y el tag tienen que estar en la MISMA mano que sale en el título
+  del replayer, y hay que cerrar la ventana de notas. Comprobar con `--dry-run`.
+
 ### Avisos al probar capturas (no son fallos del código)
+Estas capturas se movieron a `Hand_Review/_archivo/` el 22/11/2026.
 - `PokerTracker4_1ueqqVFO2g.png`: sin nº de mano legible → renombrar con el nº.
 - `buenraise-allin.flop.png`: la mano 262215195727 no está en la BD de PT4 actual.
 - `mejor-fold.png`: falta el tag ManosTopValue en PT4 (solo tiene Review).

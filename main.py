@@ -108,8 +108,8 @@ def main() -> int:
             return 1
         return 0
 
-    print("El modo vigilancia llega en la Fase 5. Usa --check o --file RUTA --dry-run.")
-    return 1
+    from core import watcher
+    return watcher.run(dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
