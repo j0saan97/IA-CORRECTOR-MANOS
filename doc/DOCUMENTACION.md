@@ -18,6 +18,20 @@ python -m pytest                           # tests
    o nombra el archivo con el nº de mano (`262289151822.png`).
 3. Guárdala en `Hand_Review/<SPOT>/`.
 
+### Spot: carpeta, tag y nota de PT4
+
+| Dato | ¿Obligatorio? | Para qué se usa |
+|------|---------------|-----------------|
+| **Carpeta** `Hand_Review/<SPOT>/` | **Sí** | Es lo ÚNICO que decide el spot y la categoría de la web. |
+| **Tag de PT4** (mismo nombre que la carpeta) | No, pero recomendado | Solo se compara con la carpeta: si no coincide, sale el aviso `(!) la mano no tiene el tag '<SPOT>' en PT4`. No se envía a la web. |
+| **Nota de mano de PT4** | **Sí** (en la práctica) | Es la `duda` que aparece en la web y lo que leerá la IA (Fase 4). Sin nota la mano se sube con la duda vacía. |
+
+Por qué conviene poner el tag aunque no sea obligatorio:
+
+- **Filtros en PT4:** permite sacar todas las manos de un spot en PT4 y ver sus stats sin depender de las capturas.
+- **Control de errores:** si la captura acaba en la carpeta equivocada, el aviso lo detecta. Sin tag no hay con qué comparar.
+- **Futuro:** si algún día se procesan manos directamente desde PT4 (sin captura), el tag será lo único que indique el spot.
+
 ## Configuración (`.env`)
 
 Copiar [../.env.example](../.env.example) como `.env`. Nunca subir `.env` a GitHub.

@@ -41,6 +41,7 @@ PokerStars.** Winamax y Yatahay se validarán en versiones posteriores (no se bl
 | 16/11/2026 | Carpetas en local (`Desktop/Hand_Review`) | Sincronización de Google Drive en pausa |
 | 16/11/2026 | Eliminados `server/api_upload.php` y `server/migration.sql` de este repo | El endpoint vive en poker_library; la migración ya está aplicada |
 | 22/11/2026 | El análisis de IA se guarda en `<SPOT>/<hand_id>.txt` y NO se sube a la web | El usuario valida el análisis y lo pega a mano en el buscador si le sirve |
+| 22/11/2026 | El spot se decide por la carpeta; el tag de PT4 solo genera un aviso si no coincide | La carpeta siempre existe (hace falta para guardar la captura); el tag puede olvidarse. Ver [DOCUMENTACION.md](DOCUMENTACION.md#spot-carpeta-tag-y-nota-de-pt4) |
 | 22/11/2026 | v1 solo valida PokerStars; Winamax y Yatahay quedan en el código sin bloquear | Acotar las pruebas; las otras salas llegan en versiones posteriores |
 
 ## Problemas encontrados
