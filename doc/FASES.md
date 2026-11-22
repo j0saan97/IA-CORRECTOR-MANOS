@@ -9,6 +9,16 @@
 | 4 — Apuntes + IA | **Pendiente** |
 | 5 — Automático | **En curso**: watcher y arranque con Windows hechos; falta pasar a producción |
 
+## Pendientes fuera de fase
+
+- [ ] **SEGURIDAD (repo poker_library):** `poker-library-buscar/db_connect.php` está en GitHub
+  con la contraseña de MySQL en texto plano (desde el commit `b7dd01e`; el `.gitignore` solo
+  excluye el de la raíz). Hacer:
+  1. Cambiar la contraseña del usuario MySQL en cPanel (y actualizar `db_connect.php` en el servidor).
+  2. `git rm --cached poker-library-buscar/db_connect.php` y añadir `**/db_connect.php` al `.gitignore`.
+- [ ] Confirmar las URLs de PRODUCCIÓN de subir/buscar manos en [DOCUMENTACION.md](DOCUMENTACION.md#entornos-web-repo-poker_library).
+- [ ] (Opcional) Entorno localhost con XAMPP: copia de la BD o Remote MySQL de cPanel.
+
 ## Fase 0 — Preparación
 
 - [x] Instalar Python 3.11+ (3.14.2), Tesseract OCR (5.5.3) y Ollama.
