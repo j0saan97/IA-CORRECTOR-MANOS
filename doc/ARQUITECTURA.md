@@ -87,8 +87,12 @@ IA-CORRECTOR-MANOS/
 │   └── config_api.example.php  Plantilla del token (config_api.php va solo al servidor)
 │   (api_upload.php vive en el repo poker_library, junto a upload.php)
 │
+├── scripts/
+│   └── arranque_windows.ps1  Instala/quita la tarea de Windows que arranca el watcher
+│
 ├── tests/
-│   └── test_parsers.py       Tests de OCR-regex, notas XML e historial
+│   ├── test_parsers.py       Tests de OCR-regex, notas XML e historial
+│   └── test_watcher.py       Tests del watcher (qué es captura, estabilidad, pendientes)
 │
 └── logs/
     └── pipeline.log          Registro de cada mano procesada / errores

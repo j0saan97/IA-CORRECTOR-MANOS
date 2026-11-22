@@ -24,6 +24,27 @@ python -m pytest                           # tests
 - Una mano ya subida no se repite: `state.db` por archivo y 409 del servidor por `hand_id`.
 - Todo queda en `logs/pipeline.log`.
 
+### Arranque automático con Windows
+
+Tarea programada **IA-Corrector-Manos**: al iniciar sesión (con 1 min de retraso para que
+arranquen PT4/PostgreSQL y la red) lanza `pythonw.exe main.py`, **sin ventana**. Si se cae,
+Windows lo reintenta 3 veces (cada 1 min). Al no haber ventana, para ver qué hace se mira
+`logs/pipeline.log`.
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\arranque_windows.ps1           # instalar
+powershell -ExecutionPolicy Bypass -File scripts\arranque_windows.ps1 -Quitar   # quitar
+Get-ScheduledTask -TaskName IA-Corrector-Manos                                  # estado
+Stop-ScheduledTask  -TaskName IA-Corrector-Manos                                # parar ahora
+Start-ScheduledTask -TaskName IA-Corrector-Manos                                # arrancar ahora
+```
+
+Si quieres usar `python main.py` en una consola (para ver la salida), para antes la tarea.
+Si los dos corren a la vez no se duplican manos (el servidor responde 409), pero el log sale doble.
+
+Si una captura falla porque PT4 aún no ha importado la mano o PostgreSQL no estaba
+arrancado, se reintenta en el siguiente arranque (o con `Stop`/`Start-ScheduledTask`).
+
 ### Cómo preparar una captura
 
 1. Etiqueta la mano en PT4 con el tag del spot y escribe la duda en la nota de mano.

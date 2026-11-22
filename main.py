@@ -10,8 +10,9 @@ import requests
 
 from config import settings
 
-sys.stdout.reconfigure(encoding="utf-8")
-sys.stderr.reconfigure(encoding="utf-8")
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None:          # con pythonw.exe (sin consola) no hay stdout/stderr
+        _stream.reconfigure(encoding="utf-8")
 
 
 def setup_logging() -> None:
