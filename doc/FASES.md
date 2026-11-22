@@ -80,7 +80,13 @@ subtipo desde el historial (ZOOM / 6Max / 9max, CON/SIN ANTE), categoría por sp
 - [x] `core/hh_summary.py`: resumen exacto de la mano en español (posiciones, cartas, acciones
   por calle en BB, bote, all-in). Va en el `.txt` y es lo que lee la IA.
 - [ ] **Calidad de la IA insuficiente** con `qwen2.5:7b` en CPU (ver
-  [INVESTIGACION.md](INVESTIGACION.md#calidad-del-análisis-con-qwen257b)). Decidir modelo/enfoque.
+  [INVESTIGACION.md](INVESTIGACION.md#calidad-del-análisis-con-qwen257b)). Decidir modelo/enfoque:
+  - **A)** IA en la nube (Claude): mucho mejor razonamiento y rápido; céntimos por mano; la mano
+    (historial, duda, apuntes) sale del PC. Recomendada si eso no importa.
+  - **B)** Seguir en local: actualizar driver NVIDIA + apuntes + modelo mayor. Lento, calidad dudosa.
+  - **C)** Sin veredicto IA: `.txt` = resumen exacto + regla de los apuntes del spot. Fiable y gratis.
+- [ ] Decir dónde están los apuntes (Drive, PDF...) para pasarlos a `knowledge_base/` (hace falta en A, B y C).
+- [ ] (Si B) Actualizar driver NVIDIA (ahora 560.94) y quitar `OLLAMA_NUM_GPU=0` del `.env`.
 - [ ] Probar varias manos con `--dry-run` y ajustar el prompt.
 - ~~Mostrar `analisis_ia` en el modal del buscador~~ → descartado (22/11/2026): el
   análisis lo valida el usuario y lo pega a mano.
